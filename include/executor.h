@@ -1,6 +1,7 @@
-typedef struct {
-    char *name;
+typedef struct Command{
+    char* name;
     char **args;
+    int argc;
 } Command;
 
-void execute_command(Command cmd);
+int execute_command(Command cmd);
