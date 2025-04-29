@@ -17,12 +17,12 @@ int main() {
             break;
         }
 
-        // Command cmd = parse_input(input);
+        Command cmd = parse_input(input);
         free(input);
-        // if (strcmp(cmd.name, "exit") == 0) {
-        //     break;
-        // }
-        // execute_command(cmd);
+        if (strcmp(cmd.name, "exit") == 0) {
+            break;
+        }
+        execute_command(cmd);
     }
 
     printf("\nBye!\n");
