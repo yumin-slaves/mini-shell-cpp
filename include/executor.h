@@ -1,7 +1,3 @@
-typedef struct Command{
-    char* name;
-    char **args;
-    int argc;
-} Command;
+#include "parser.h"
 
 int execute_command(Command cmd);
