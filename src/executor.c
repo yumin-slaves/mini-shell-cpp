@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "executor.h"
-// #include "parser.h"
+#include "parser.h"
 
 // 함수 주석 이렇게 적으면 마우스 오버했을 때 도움말 뜸 나중에 써보슈 ㄱㄱ
 /**
