@@ -15,7 +15,7 @@ char* createCharMem() {
 
 // 사용자 입력 파싱하기
 Command parse_input(char *input) {
-    int capacity = 1;
+    int capacity = 2;
 
     // cmd 초기화
     Command cmd;
@@ -34,20 +34,26 @@ Command parse_input(char *input) {
         return cmd;
     }
 
+    // 명령어 처리
     strcpy(cmd.name, ptr);
+    cmd.args[cmd.argc] = createCharMem();
+    strcpy(cmd.args[cmd.argc++], cmd.name);
 
     while ((ptr = strtok(NULL, " ")) != NULL) {
         if (cmd.argc == capacity) { // args is full
             capacity *= 2;
             cmd.args = realloc(cmd.args, sizeof(char*) * capacity);
             if (!cmd.args) {
-                fprintf(stderr, "메모리 재할당 실패패\n");
+                fprintf(stderr, "메모리 재할당 실패\n");
                 exit(EXIT_FAILURE);
             }
         }
         cmd.args[cmd.argc] = createCharMem();
         strcpy(cmd.args[cmd.argc++], ptr);
     }
+
+    // 마지막 인자는 NULL
+    cmd.args[cmd.argc] = NULL;
 
     return cmd;
 }
