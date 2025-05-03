@@ -4,7 +4,7 @@
 #include "parser.h"
 
 // 1차원 char 생성하기
-char* createCharMem() {
+char* create_char_mem() {
     char* temp = (char*)malloc(sizeof(char) * MAX_COMMAND_SIZE);
     if (!temp) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -19,13 +19,14 @@ Command parse_input(char *input) {
 
     // cmd 초기화
     Command cmd;
-    cmd.name = createCharMem();
+    cmd.name = create_char_mem();
     cmd.args = (char**)malloc(sizeof(char*) * capacity);
     if (!cmd.args) {
         fprintf(stderr, "메모리 할당 실패\n");
         exit(EXIT_FAILURE);
     }
     cmd.argc = 0;
+    cmd.is_background = 0;
 
     char* ptr = strtok(input, " ");
 
@@ -36,7 +37,7 @@ Command parse_input(char *input) {
 
     // 명령어 처리
     strcpy(cmd.name, ptr);
-    cmd.args[cmd.argc] = createCharMem();
+    cmd.args[cmd.argc] = create_char_mem();
     strcpy(cmd.args[cmd.argc++], cmd.name);
 
     while ((ptr = strtok(NULL, " ")) != NULL) {
@@ -48,8 +49,17 @@ Command parse_input(char *input) {
                 exit(EXIT_FAILURE);
             }
         }
-        cmd.args[cmd.argc] = createCharMem();
+        cmd.args[cmd.argc] = create_char_mem();
         strcpy(cmd.args[cmd.argc++], ptr);
+    }
+
+    /* 마지막 인자가 "&"일 시
+    * cmd.is_background = true,
+    * 파싱 결과에서 삭제
+    */ 
+    if (strcmp(cmd.args[cmd.argc - 1], "&") == 0) {
+        cmd.is_background = true;
+        cmd.argc -= 1;
     }
 
     // 마지막 인자는 NULL

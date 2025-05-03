@@ -79,26 +79,31 @@ int execute_command(Command cmd) {
     } else {
         // 부모 프로세스의 입장에서
 
-        int status;
-        // 자식 프로세스가 종료될 때까지 대기
-        if (waitpid(pid, &status, 0) == -1) {
-            perror("waitpid failed");
-            return -1;
-        }
-
-        // 자식 프로세스가 종료되었는지 확인
-        if (WIFEXITED(status)) {
-            // 만약 정상적으로 종료되었다면
-            int exit_status = WEXITSTATUS(status);
-            if (exit_status != 0) {
-                fprintf(stderr, "'%s'를 코드 %d으로 종료되었습니다.\n", cmd.name, exit_status);
+        // 백그라운드 실행이 아니면
+        if (cmd.is_background == false) {
+            int status;
+            // 자식 프로세스가 종료될 때까지 대기
+            if (waitpid(pid, &status, 0) == -1) {
+                perror("waitpid failed");
                 return -1;
             }
-        } else if (WIFSIGNALED(status)) {
-            // 만약 자식 프로세스가 인터럽트 같은 외부 신호로 종료되었다면
-            int term_sig = WTERMSIG(status);
-            fprintf(stderr, "'%s'는 신호 %d에 의해 종료되었습니다.\n", cmd.name, term_sig);
-            return -1;
+
+            // 자식 프로세스가 종료되었는지 확인
+            if (WIFEXITED(status)) {
+                // 만약 정상적으로 종료되었다면
+                int exit_status = WEXITSTATUS(status);
+                if (exit_status != 0) {
+                    fprintf(stderr, "'%s'를 코드 %d으로 종료되었습니다.\n", cmd.name, exit_status);
+                    return -1;
+                }
+            } else if (WIFSIGNALED(status)) {
+                // 만약 자식 프로세스가 인터럽트 같은 외부 신호로 종료되었다면
+                int term_sig = WTERMSIG(status);
+                fprintf(stderr, "'%s'는 신호 %d에 의해 종료되었습니다.\n", cmd.name, term_sig);
+                return -1;
+            }
+        } else {
+            printf("[background] %d\n", pid);
         }
     }
 
