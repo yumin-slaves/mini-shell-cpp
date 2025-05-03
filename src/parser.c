@@ -4,12 +4,13 @@
 #include "parser.h"
 
 // 1차원 char 생성하기
-char* createCharMem() {
-    char* temp = (char*)malloc(sizeof(char) * MAX_COMMAND_SIZE);
+char* create_char_mem(char *input) {
+    char* temp = (char*)malloc(sizeof(char) * (strlen(input) + 1));
     if (!temp) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(EXIT_FAILURE);
     }
+    strcpy(temp, input);
     return temp;
 }
 
@@ -19,7 +20,7 @@ Command parse_input(char *input) {
 
     // cmd 초기화
     Command cmd;
-    cmd.name = createCharMem();
+    cmd.redirect_type = NO_REDIRECT;
     cmd.args = (char**)malloc(sizeof(char*) * capacity);
     if (!cmd.args) {
         fprintf(stderr, "메모리 할당 실패\n");
@@ -35,9 +36,8 @@ Command parse_input(char *input) {
     }
 
     // 명령어 처리
-    strcpy(cmd.name, ptr);
-    cmd.args[cmd.argc] = createCharMem();
-    strcpy(cmd.args[cmd.argc++], cmd.name);
+    cmd.name = create_char_mem(ptr);
+    cmd.args[cmd.argc++] = create_char_mem(cmd.name);
 
     while ((ptr = strtok(NULL, " ")) != NULL) {
         if (cmd.argc == capacity) { // args is full
@@ -48,11 +48,42 @@ Command parse_input(char *input) {
                 exit(EXIT_FAILURE);
             }
         }
-        cmd.args[cmd.argc] = createCharMem();
-        strcpy(cmd.args[cmd.argc++], ptr);
+
+        // 파일명이 존재하지 않을 때 오류 처리하기
+        if(!strcmp(ptr, ">")){
+            ptr = strtok(NULL, " ");
+            if(ptr){
+                cmd.output_file = create_char_mem(ptr);
+            }
+            cmd.redirect_type = REDIRECT_OUTPUT;
+            
+        }
+        else if(!strcmp(ptr, ">>")){
+            ptr = strtok(NULL, " ");
+            if(ptr){
+                cmd.output_file = create_char_mem(ptr);
+            }
+            cmd.redirect_type = REDIRECT_APPEND;
+        }
+        else if(!strcmp(ptr, "<")){
+            ptr = strtok(NULL, " ");
+            if(ptr){
+                cmd.input_file = create_char_mem(ptr);
+            }
+            cmd.redirect_type = REDIRECT_INPUT;
+        }
+        else{
+            cmd.args[cmd.argc++] = create_char_mem(ptr);
+        }
     }
 
-    // 마지막 인자는 NULL
+    if (cmd.argc >= capacity) { // args is full
+        cmd.args = realloc(cmd.args, sizeof(char*) * (capacity + 1));
+        if (!cmd.args) {
+            fprintf(stderr, "메모리 재할당 실패\n");
+            exit(EXIT_FAILURE);
+        }
+    }
     cmd.args[cmd.argc] = NULL;
 
     return cmd;

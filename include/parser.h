@@ -1,14 +1,19 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#define MAX_COMMAND_SIZE 1024
+#include "redirect.h"
 
 
-typedef struct Command{
+typedef struct {
     char* name;
-    char **args;
+    char** args;
     int argc;
-}Command;
+    int is_background;
+    char* input_file;
+    char* output_file;
+    int is_piped;
+    RedirectType redirect_type;
+} Command;
 
 // 사용자 입력 파싱하기
 Command parse_input(char *input);

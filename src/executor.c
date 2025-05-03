@@ -7,6 +7,7 @@
 
 #include "executor.h"
 #include "parser.h"
+#include "redirect.h"
 
 // 함수 주석 이렇게 적으면 마우스 오버했을 때 도움말 뜸 나중에 써보슈 ㄱㄱ
 /**
@@ -70,6 +71,24 @@ int execute_command(Command cmd) {
     }
 
     if (pid == 0) {
+
+        // 리디렉션 처리하기
+        if(cmd.redirect_type == REDIRECT_INPUT){
+            if(handle_input_redirect(cmd.input_file) == -1){
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(cmd.redirect_type == REDIRECT_OUTPUT){
+            if(handle_output_redirect(cmd.output_file) == -1){
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if(cmd.redirect_type == REDIRECT_APPEND){
+            if(handle_append_redirect(cmd.output_file) == -1){
+                exit(EXIT_FAILURE);
+            }
+        }
+
         // 자식 프로세스
         if (execvp(cmd.name, cmd.args) == -1) {
             fprintf(stderr, "에러: '%s'은(는) 명령, 실행 가능한 프로그램, 또는 빌드 파일이 아닙니다..\n", cmd.name);
