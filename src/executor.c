@@ -17,6 +17,11 @@
  */
 int execute_command(Command cmd) {
     // 내부 명령어 처리
+    if (strcmp(cmd.name, "exit") == 0) {
+        printf("Bye!\n");
+        exit(0);
+    }
+
     if (strcmp(cmd.name, "cd") == 0) {
         if (cmd.args[1] == NULL) {
             fprintf(stderr, "cd: 경로를 입력하세요.\n");

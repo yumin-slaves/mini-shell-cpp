@@ -2,40 +2,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "parser.h"
 #include "executor.h"
 
-void print_prompt();
-char* read_input();
-
-int main() {
-    while (1) {
-        print_prompt();
-        char *input = read_input();
-        if (input == NULL) {
-            break;
-        }
-
-        Command cmd = parse_input(input);
-        free(input);
-        if (strcmp(cmd.name, "exit") == 0) {
-            break;
-        }
-        execute_command(cmd);
-    }
-
-    printf("\nBye!\n");
-    return 0;
-}
-
-void print_prompt() {
-    printf("mysh> ");
-    fflush(stdout);
-}
-
+/**
+* @brief Reads a line of input from the user.
+* @return A pointer to a string containing the input line, or NULL on EOF or error.
+*/
 char* read_input() {
-    int size = 128; // initial size
+    // 초기 사이즈를 128로 설정
+    int size = 128;
     int len = 0;
 
     char *buffer = malloc(size);
@@ -69,4 +47,29 @@ char* read_input() {
     }
     
     return buffer;
+}
+
+/**
+ * @brief Print prompt with flush.
+ */
+void print_prompt() {
+    printf("mysh> ");
+    fflush(stdout);
+}
+
+int main() {
+    while (true) {
+        print_prompt();
+        char *input = read_input();
+        if (input == NULL) {
+            break;
+        }
+
+        Command cmd = parse_input(input);
+        free(input);
+        execute_command(cmd);
+    }
+
+    printf("\nBye!\n");
+    return 0;
 }
