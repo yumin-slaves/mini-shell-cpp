@@ -65,9 +65,12 @@ int main() {
             break;
         }
 
-        Command cmd = parse_input(input);
+        int num_cmds;
+        Command* cmds = parse_input(input, &num_cmds);
         free(input);
-        execute_command(cmd);
+
+        execute_commands(cmds, num_cmds);
+        freeCommands(cmds, num_cmds);
     }
 
     printf("\nBye!\n");

@@ -1,3 +1,3 @@
 #include "parser.h"
 
-int execute_command(Command cmd);
+int execute_commands(Command* cmds, int num_cmds);

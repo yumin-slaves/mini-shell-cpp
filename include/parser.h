@@ -11,11 +11,11 @@ typedef struct Command{
 }Command;
 
 // 사용자 입력 파싱하기
-Command parse_input(char *input);
+Command* parse_input(char *input, int* num_cmds);
 
 // 메모리 공간 생성
 char* createCharMem();
 
 // cmd free
-void freeCommand(Command* cmd);
+void freeCommands(Command* cmds, int num_cmds);
 #endif
