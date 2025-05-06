@@ -19,7 +19,7 @@ int execute_command(Command cmd) {
     // 내부 명령어 처리
     if (strcmp(cmd.name, "exit") == 0) {
         printf("Bye!\n");
-        exit(0);
+        return 0;
     }
 
     if (strcmp(cmd.name, "cd") == 0) {
@@ -74,7 +74,7 @@ int execute_command(Command cmd) {
         if (execvp(cmd.name, cmd.args) == -1) {
             fprintf(stderr, "에러: '%s'은(는) 명령, 실행 가능한 프로그램, 또는 빌드 파일이 아닙니다..\n", cmd.name);
             perror("execvp");
-            exit(EXIT_FAILURE);
+            return -1;
         }
     } else {
         // 부모 프로세스의 입장에서
