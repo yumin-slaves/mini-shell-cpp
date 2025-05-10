@@ -3,15 +3,22 @@
 
 #include <stdbool.h>
 
+#include "redirect.h"
+
 #define MAX_COMMAND_SIZE 1024
 
-typedef struct Command{
+typedef struct {
     char* name;
-    char **args;
+    char** args;
     int argc;
 
+    char* input_file;
+    char* output_file;
+    
     bool is_background;
-}Command;
+    bool is_piped;
+    RedirectType redirect_type;
+} Command;
 
 // 사용자 입력 파싱하기
 Command parse_input(char *input);
