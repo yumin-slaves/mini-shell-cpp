@@ -74,6 +74,7 @@ int main() {
         Command cmd = parse_input(input);
         free(input);
         execute_command(cmd);
+        free_command(&cmd);
     }
 
     printf("\nBye!\n");

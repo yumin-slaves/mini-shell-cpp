@@ -27,5 +27,5 @@ Command parse_input(char *input);
 char* create_char_mem();
 
 // cmd free
-void freeCommand(Command* cmd);
+void free_command(Command* cmd);
 #endif
