@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <signal.h>
 
 #include "executor.h"
 #include "parser.h"
@@ -160,10 +161,9 @@ int execute_commands(Command* cmds, int num_cmds) {
     if (prev_read_fd != -1) {
         close(prev_read_fd);
     }
-
-    for(int i = 0; i < num_cmds ;i++){
-        wait(NULL);
-    }
+    
+    // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
+    signal(SIGCHLD, SIG_IGN);
 
     return 0;
 }
