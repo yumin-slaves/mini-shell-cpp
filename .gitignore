@@ -68,15 +68,14 @@ dkms.conf
 
 # Local History for Visual Studio Code
 .history/
+.vscode/
 
 # Built Visual Studio Code Extensions
 *.vsix
 
 # test folder
-test/*.o
-test/*.out
-test/*.log
-test/*.tmp
+/test
 
 # others
 /build/
+mysh
