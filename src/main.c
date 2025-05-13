@@ -70,7 +70,7 @@ int main() {
         free(input);
 
         execute_commands(cmds, num_cmds);
-        freeCommands(cmds, num_cmds);
+        free_commands(cmds, num_cmds);
     }
 
     printf("\nBye!\n");

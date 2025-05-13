@@ -14,8 +14,8 @@ typedef struct Command{
 Command* parse_input(char *input, int* num_cmds);
 
 // 메모리 공간 생성
-char* createCharMem();
+char* create_char_mem();
 
 // cmd free
-void freeCommands(Command* cmds, int num_cmds);
+void free_commands(Command* cmds, int num_cmds);
 #endif

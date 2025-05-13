@@ -4,7 +4,7 @@
 #include "parser.h"
 
 // 1차원 char 생성하기
-char* createCharMem() {
+char* create_char_mem() {
     char* temp = (char*)malloc(sizeof(char) * MAX_COMMAND_SIZE);
     if (!temp) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -17,48 +17,52 @@ char* createCharMem() {
 Command parse_single_command(char *input) {
     int capacity = 2;
 
-    // cmd 초기화
     Command cmd;
-    cmd.name = createCharMem();
+    cmd.name = create_char_mem();
     cmd.args = (char**)malloc(sizeof(char*) * capacity);
-    if (!cmd.args) {
-        fprintf(stderr, "메모리 할당 실패\n");
-        exit(EXIT_FAILURE);
-    }
     cmd.argc = 0;
 
-    char* ptr = strtok(input, " ");
+    int len = strlen(input);
+    int i = 0;
+    while (i < len) {
+        while (i < len && (input[i] == ' ' || input[i] == '\t')) i++;
+        if (i >= len) break;
 
-    if (ptr == NULL) {
-        printf("명령이 제대로 입력되지 않았습니다");
-        return cmd;
-    }
+        char* arg = create_char_mem();
+        int arg_index = 0;
+        char quote = 0;
 
-    // 명령어 처리
-    strcpy(cmd.name, ptr);
-    cmd.args[cmd.argc] = createCharMem();
-    strcpy(cmd.args[cmd.argc++], cmd.name);
-
-    while ((ptr = strtok(NULL, " ")) != NULL) {
-        if (cmd.argc == capacity) { // args is full
-            capacity *= 2;
-            cmd.args = realloc(cmd.args, sizeof(char*) * capacity);
-            if (!cmd.args) {
-                fprintf(stderr, "메모리 재할당 실패\n");
-                exit(EXIT_FAILURE);
+        if (input[i] == '"' || input[i] == '\'') {
+            quote = input[i++];
+            while (i < len && input[i] != quote) {
+                arg[arg_index++] = input[i++];
+            }
+            if (i < len && input[i] == quote) i++; // 닫는 따옴표 건너뜀
+        } else {
+            while (i < len && input[i] != ' ' && input[i] != '\t') {
+                arg[arg_index++] = input[i++];
             }
         }
-        cmd.args[cmd.argc] = createCharMem();
-        strcpy(cmd.args[cmd.argc++], ptr);
+
+        arg[arg_index] = '\0';
+
+        if (cmd.argc == capacity) {
+            capacity *= 2;
+            cmd.args = realloc(cmd.args, sizeof(char*) * capacity);
+        }
+
+        cmd.args[cmd.argc] = arg;
+        if (cmd.argc == 0) strcpy(cmd.name, arg);
+        cmd.argc++;
     }
 
-    // 마지막 인자는 NULL
+    cmd.args = realloc(cmd.args, sizeof(char*) * (cmd.argc + 1));
     cmd.args[cmd.argc] = NULL;
 
     return cmd;
 }
 
-// 전체 입력 파싱 (파이프 처리 포함)
+
 Command* parse_input(char *input, int* num_cmds) {
     int capacity = 2;
     *num_cmds = 0;
@@ -72,6 +76,17 @@ Command* parse_input(char *input, int* num_cmds) {
     char* saveptr;
     char* token = strtok_r(input, "|", &saveptr);
     while (token != NULL) {
+        // 앞뒤 공백 제거
+        while (*token == ' ') token++;
+        char* end = token + strlen(token) - 1;
+        while (end >= token && (*end == ' ' || *end == '\n')) *end-- = '\0';
+
+        // 토큰이 완전히 비어 있는 경우 무시
+        if (strlen(token) == 0) {
+            token = strtok_r(NULL, "|", &saveptr);
+            continue;
+        }
+
         if (*num_cmds == capacity) {
             capacity *= 2;
             cmds = realloc(cmds, sizeof(Command) * capacity);
@@ -80,11 +95,6 @@ Command* parse_input(char *input, int* num_cmds) {
                 exit(EXIT_FAILURE);
             }
         }
-
-        // 앞뒤 공백 제거
-        while (*token == ' ') token++;
-        char* end = token + strlen(token) - 1;
-        while (end > token && (*end == ' ' || *end == '\n')) *end-- = '\0';
 
         cmds[*num_cmds] = parse_single_command(token);
         (*num_cmds)++;
@@ -96,7 +106,7 @@ Command* parse_input(char *input, int* num_cmds) {
 }
 
 // Command 메모리 해제 함수
-void freeCommand(Command* cmd) {
+void free_command(Command* cmd) {
     free(cmd->name);
     for (int i = 0; i < cmd->argc; i++) {
         free(cmd->args[i]);
@@ -104,9 +114,9 @@ void freeCommand(Command* cmd) {
     free(cmd->args);
 }
 
-void freeCommands(Command* cmds, int num_cmds) {
+void free_commands(Command* cmds, int num_cmds) {
     for (int i = 0; i < num_cmds; i++) {
-        freeCommand(&cmds[i]);
+        free_command(&cmds[i]);
     }
     free(cmds);
 }
