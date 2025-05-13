@@ -23,6 +23,7 @@ Command parse_single_command(char *input) {
     cmd.argc = 0;
     cmd.input_file = NULL;
     cmd.output_file = NULL;
+    cmd.is_background = false;
     cmd.redirect_type = NO_REDIRECT;
 
     int len = strlen(input);
@@ -75,10 +76,11 @@ Command parse_single_command(char *input) {
             while (i < len && input[i] != quote) {
                 arg[arg_index++] = input[i++];
             }
-            if (i < len && input[i] == quote) i++;
+            if (i < len && input[i] == quote) {
+                i++;
+            }
         } else {
-            while (i < len && input[i] != ' ' && input[i] != '\t' &&
-                   input[i] != '>' && input[i] != '<') {
+            while (i < len && input[i] != ' ' && input[i] != '\t' && input[i] != '>' && input[i] != '<') {
                 arg[arg_index++] = input[i++];
             }
         }
@@ -93,6 +95,11 @@ Command parse_single_command(char *input) {
         cmd.args[cmd.argc] = arg;
         if (cmd.argc == 0) strcpy(cmd.name, arg);
         cmd.argc++;
+    }
+
+    if (strcmp(cmd.args[cmd.argc - 1], "&") == 0) {
+        cmd.is_background = true;
+        cmd.argc -= 1;
     }
 
     cmd.args = realloc(cmd.args, sizeof(char*) * (cmd.argc + 1));

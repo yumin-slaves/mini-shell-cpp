@@ -120,8 +120,27 @@ int execute_commands(Command* cmds, int num_cmds) {
             }
         }
         else{
+            if (cmds[i].is_background == false) {
+                int status;
+                if (waitpid(pid, &status, 0) == -1) {
+                    perror("waitpid failed");
+                    return -1;
+                }
 
-            waitpid(pid, NULL, 0);
+                if (WIFEXITED(status)) {
+                    int exit_status = WEXITSTATUS(status);
+                    if (exit_status != 0) {
+                        fprintf(stderr, "'%s'를 코드 %d으로 종료되었습니다.\n", cmds[i].name, exit_status);
+                        return -1;
+                    }
+                } else if (WIFSIGNALED(status)) {
+                    int term_sig = WTERMSIG(status);
+                    fprintf(stderr, "'%s'는 신호 %d에 의해 종료되었습니다.\n", cmds[i].name, term_sig);
+                    return -1;
+                }
+            } else {
+                printf("[background] %d\n", pid);
+            }
 
             if (prev_read_fd != -1){
                 close(prev_read_fd);
@@ -131,6 +150,7 @@ int execute_commands(Command* cmds, int num_cmds) {
                 close(pipe_fd[1]);
                 prev_read_fd = pipe_fd[0];
             }
+
 
         }
 

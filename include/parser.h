@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <stdbool.h>
 #include "redirect.h"
 
 #define MAX_COMMAND_SIZE 1024
@@ -12,6 +13,7 @@ typedef struct {
 
     char* input_file;
     char* output_file;
+    bool is_background;
     RedirectType redirect_type;
 } Command;
 
