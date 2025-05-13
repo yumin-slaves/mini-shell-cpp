@@ -60,15 +60,9 @@ dkms.conf
 
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
 
 # Local History for Visual Studio Code
 .history/
-.vscode/
 
 # Built Visual Studio Code Extensions
 *.vsix
@@ -77,5 +71,5 @@ dkms.conf
 /test
 
 # others
-/build/
 mysh
+/build/
