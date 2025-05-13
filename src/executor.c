@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "redirect.h"
 
+// 내부 명령어 처리
 int handle_internal_command(Command cmd) {
     if (strcmp(cmd.name, "exit") == 0) {
         printf("Bye!\n");
