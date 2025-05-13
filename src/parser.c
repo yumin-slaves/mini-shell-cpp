@@ -21,6 +21,9 @@ Command parse_single_command(char *input) {
     cmd.name = create_char_mem();
     cmd.args = (char**)malloc(sizeof(char*) * capacity);
     cmd.argc = 0;
+    cmd.input_file = NULL;
+    cmd.output_file = NULL;
+    cmd.redirect_type = NO_REDIRECT;
 
     int len = strlen(input);
     int i = 0;
@@ -28,6 +31,41 @@ Command parse_single_command(char *input) {
         while (i < len && (input[i] == ' ' || input[i] == '\t')) i++;
         if (i >= len) break;
 
+        // 리디렉션 기호 확인
+        if (input[i] == '<' || input[i] == '>') {
+            int redirect_type = 0;
+            if (input[i] == '<') {
+                redirect_type = REDIRECT_INPUT;
+                i++;
+            } else if (input[i] == '>') {
+                i++;
+                if (input[i] == '>') {
+                    redirect_type = REDIRECT_APPEND;
+                    i++;
+                } else {
+                    redirect_type = REDIRECT_OUTPUT;
+                }
+            }
+
+            while (i < len && (input[i] == ' ' || input[i] == '\t')) i++;
+
+            char* filename = create_char_mem();
+            int file_index = 0;
+            while (i < len && input[i] != ' ' && input[i] != '\t') {
+                filename[file_index++] = input[i++];
+            }
+            filename[file_index] = '\0';
+
+            if (redirect_type == REDIRECT_INPUT) {
+                cmd.input_file = filename;
+            } else {
+                cmd.output_file = filename;
+            }
+            cmd.redirect_type = redirect_type;
+            continue;
+        }
+
+        // 일반 인자 처리
         char* arg = create_char_mem();
         int arg_index = 0;
         char quote = 0;
@@ -37,9 +75,10 @@ Command parse_single_command(char *input) {
             while (i < len && input[i] != quote) {
                 arg[arg_index++] = input[i++];
             }
-            if (i < len && input[i] == quote) i++; // 닫는 따옴표 건너뜀
+            if (i < len && input[i] == quote) i++;
         } else {
-            while (i < len && input[i] != ' ' && input[i] != '\t') {
+            while (i < len && input[i] != ' ' && input[i] != '\t' &&
+                   input[i] != '>' && input[i] != '<') {
                 arg[arg_index++] = input[i++];
             }
         }
@@ -61,6 +100,7 @@ Command parse_single_command(char *input) {
 
     return cmd;
 }
+
 
 
 Command* parse_input(char *input, int* num_cmds) {

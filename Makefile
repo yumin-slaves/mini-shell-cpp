@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Iinclude
 SRCDIR = src
 BUILDDIR = build
-TARGET = shell
+TARGET = mysh
 
 ifeq ($(OS),Windows_NT)
 	EXT = .exe
@@ -10,7 +10,7 @@ else
 	EXT =
 endif
 
-TARGET_BIN = $(BUILDDIR)/$(TARGET)$(EXT)
+TARGET_BIN = $(TARGET)$(EXT)
 
 SRCS = $(wildcard $(SRCDIR)/*.c)
 OBJS = $(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SRCS))
@@ -27,6 +27,6 @@ $(TARGET_BIN): $(OBJS)
 all: $(TARGET)
 
 clean:
-	rm -rf $(BUILDDIR)
+	rm -rf $(BUILDDIR) $(TARGET)$(EXT)
 
 .PHONY: all clean

@@ -7,6 +7,7 @@
 
 #include "executor.h"
 #include "parser.h"
+#include "redirect.h"
 
 int handle_internal_command(Command cmd) {
     if (strcmp(cmd.name, "exit") == 0) {
@@ -81,23 +82,42 @@ int execute_commands(Command* cmds, int num_cmds) {
             return -1;
         }
 
-        if (pid == 0){
+       if (pid == 0) {
+            //리디렉션 처리
+            if (cmds[i].redirect_type == REDIRECT_INPUT && cmds[i].input_file) {
+                if (handle_input_redirect(cmds[i].input_file) != 0){
+                    perror("<");
+                    exit(EXIT_FAILURE);
+                }
+            } else if (cmds[i].redirect_type == REDIRECT_OUTPUT && cmds[i].output_file) {
+                if (handle_output_redirect(cmds[i].output_file) != 0){
+                    perror(">");
+                    exit(EXIT_FAILURE);
+                }
+            } else if (cmds[i].redirect_type == REDIRECT_APPEND && cmds[i].output_file) {
+                if (handle_append_redirect(cmds[i].output_file) != 0){
+                    perror(">>");
+                    exit(EXIT_FAILURE);
+                }
+            }
 
-            if (prev_read_fd != -1){
+            //파이프 연결
+            if (prev_read_fd != -1) {
                 dup2(prev_read_fd, STDIN_FILENO);
                 close(prev_read_fd);
             }
-            if (i < num_cmds - 1){
+
+            if (i < num_cmds - 1) {
                 close(pipe_fd[0]);
                 dup2(pipe_fd[1], STDOUT_FILENO);
                 close(pipe_fd[1]);
             }
 
-            if (execvp(cmds[i].name, cmds[i].args) == -1){
+            //외부 명령 실행
+            if (execvp(cmds[i].name, cmds[i].args) == -1) {
                 perror("execvp");
                 exit(EXIT_FAILURE);
             }
-
         }
         else{
 
