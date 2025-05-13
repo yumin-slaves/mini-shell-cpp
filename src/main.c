@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "parser.h"
 #include "executor.h"
@@ -53,7 +54,12 @@ char* read_input() {
  * @brief Print prompt with flush.
  */
 void print_prompt() {
-    printf("mysh> ");
+    char cwd[1024];
+    if (getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("mysh::%s> ", cwd);
+    } else {
+        printf("mysh::~> ");
+    }
     fflush(stdout);
 }
 
@@ -65,9 +71,12 @@ int main() {
             break;
         }
 
-        Command cmd = parse_input(input);
+        int num_cmds;
+        Command* cmds = parse_input(input, &num_cmds);
         free(input);
-        execute_command(cmd);
+
+        execute_commands(cmds, num_cmds);
+        free_commands(cmds, num_cmds);
     }
 
     printf("\nBye!\n");

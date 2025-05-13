@@ -4,103 +4,166 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <string.h>
+#include <signal.h>
 
 #include "executor.h"
 #include "parser.h"
+#include "redirect.h"
 
-// 함수 주석 이렇게 적으면 마우스 오버했을 때 도움말 뜸 나중에 써보슈 ㄱㄱ
-/**
- * @brief 주어진 Command를 실행한다.
- * 
- * @param cmd 실행할 Command와 인자
- * @return int 성공(0), 실패(-1)
- */
-int execute_command(Command cmd) {
-    // 내부 명령어 처리
+// 내부 명령어 처리
+int handle_internal_command(Command cmd) {
     if (strcmp(cmd.name, "exit") == 0) {
         printf("Bye!\n");
         exit(0);
     }
-
     if (strcmp(cmd.name, "cd") == 0) {
         if (cmd.args[1] == NULL) {
             fprintf(stderr, "cd: 경로를 입력하세요.\n");
-            return -1;
-        }
-        if (chdir(cmd.args[1]) != 0) {
+        } else if (chdir(cmd.args[1]) != 0) {
             perror("cd 실패");
-            return -1;
         }
-        return 0;
-    } else if (strcmp(cmd.name, "pwd") == 0) {
+        return 1; // 내부 명령 처리 완료
+    }
+    if (strcmp(cmd.name, "pwd") == 0) {
         char cwd[1024];
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
             printf("%s\n", cwd);
-            return 0;
         } else {
             perror("pwd 실패");
-            return -1;
         }
-    } else if (strcmp(cmd.name, "export") == 0) {
+        return 1; // 내부 명령 처리 완료
+    }
+    if (strcmp(cmd.name, "export") == 0) {
         if (cmd.args[1] == NULL) {
             fprintf(stderr, "export: 변수=값 형식으로 입력하세요.\n");
-            return -1;
+        } else {
+            char* equal_sign = strchr(cmd.args[1], '=');
+            if (!equal_sign) {
+                fprintf(stderr, "export: 변수=값 형식이 아닙니다.\n");
+            } else {
+                *equal_sign = '\0';
+                char* key = cmd.args[1];
+                char* value = equal_sign + 1;
+                if (setenv(key, value, 1) != 0) {
+                    perror("환경변수 설정 실패");
+                }
+            }
         }
-        char* equal_sign = strchr(cmd.args[1], '=');
-        if (!equal_sign) {
-            fprintf(stderr, "export: 변수=값 형식이 아닙니다.\n");
-            return -1;
-        }
-        *equal_sign = '\0'; // 변수명과 값 분리
-        char* key = cmd.args[1];
-        char* value = equal_sign + 1;
-        if (setenv(key, value, 1) != 0) {
-            perror("환경변수 설정 실패");
-            return -1;
-        }
-        return 0;
+        return 1; // 내부 명령 처리 완료
     }
+    return 0; // 외부 명령 실행 필요
+}
 
-    pid_t pid = fork();
-    
-    // 만약 fork로 자식프로세스 생성이 실패하면 -1 리턴
-    if (pid < 0) {
-        perror("fork failed");
-        return -1;
-    }
 
-    if (pid == 0) {
-        // 자식 프로세스
-        if (execvp(cmd.name, cmd.args) == -1) {
-            fprintf(stderr, "에러: '%s'은(는) 명령, 실행 가능한 프로그램, 또는 빌드 파일이 아닙니다..\n", cmd.name);
-            perror("execvp");
-            exit(EXIT_FAILURE);
-        }
-    } else {
-        // 부모 프로세스의 입장에서
+int execute_commands(Command* cmds, int num_cmds) {
+ 
+    int pipe_fd[2] = {-1,-1};
+    int prev_read_fd = -1;
 
-        int status;
-        // 자식 프로세스가 종료될 때까지 대기
-        if (waitpid(pid, &status, 0) == -1) {
-            perror("waitpid failed");
-            return -1;
-        }
-
-        // 자식 프로세스가 종료되었는지 확인
-        if (WIFEXITED(status)) {
-            // 만약 정상적으로 종료되었다면
-            int exit_status = WEXITSTATUS(status);
-            if (exit_status != 0) {
-                fprintf(stderr, "'%s'를 코드 %d으로 종료되었습니다.\n", cmd.name, exit_status);
+    for(int i = 0; i < num_cmds; i++){
+        // 마지막 명령이 아닐 때만 pipe 생성
+        if (i < num_cmds - 1){
+            if(pipe(pipe_fd) == -1){
+                perror("pipe()");
                 return -1;
             }
-        } else if (WIFSIGNALED(status)) {
-            // 만약 자식 프로세스가 인터럽트 같은 외부 신호로 종료되었다면
-            int term_sig = WTERMSIG(status);
-            fprintf(stderr, "'%s'는 신호 %d에 의해 종료되었습니다.\n", cmd.name, term_sig);
+        }
+
+        // 내부 명령어 처리
+        if (handle_internal_command(cmds[i])){
+            if (prev_read_fd != -1) close(prev_read_fd);
+            if (pipe_fd[0] != -1) close(pipe_fd[0]);
+            if (pipe_fd[1] != -1) close(pipe_fd[1]);
+            continue;
+        }
+
+        pid_t pid = fork();
+
+        if (pid < 0){
+            perror("fork");
             return -1;
         }
+
+       if (pid == 0) {
+            //리디렉션 처리
+            if (cmds[i].redirect_type == REDIRECT_INPUT && cmds[i].input_file) {
+                if (handle_input_redirect(cmds[i].input_file) != 0){
+                    perror("<");
+                    exit(EXIT_FAILURE);
+                }
+            } else if (cmds[i].redirect_type == REDIRECT_OUTPUT && cmds[i].output_file) {
+                if (handle_output_redirect(cmds[i].output_file) != 0){
+                    perror(">");
+                    exit(EXIT_FAILURE);
+                }
+            } else if (cmds[i].redirect_type == REDIRECT_APPEND && cmds[i].output_file) {
+                if (handle_append_redirect(cmds[i].output_file) != 0){
+                    perror(">>");
+                    exit(EXIT_FAILURE);
+                }
+            }
+
+            //파이프 연결
+            if (prev_read_fd != -1) {
+                dup2(prev_read_fd, STDIN_FILENO);
+                close(prev_read_fd);
+            }
+
+            if (i < num_cmds - 1) {
+                close(pipe_fd[0]);
+                dup2(pipe_fd[1], STDOUT_FILENO);
+                close(pipe_fd[1]);
+            }
+
+            //외부 명령 실행
+            if (execvp(cmds[i].name, cmds[i].args) == -1) {
+                perror("execvp");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else{
+            if (cmds[i].is_background == false) {
+                int status;
+                if (waitpid(pid, &status, 0) == -1) {
+                    perror("waitpid failed");
+                    return -1;
+                }
+
+                if (WIFEXITED(status)) {
+                    int exit_status = WEXITSTATUS(status);
+                    if (exit_status != 0) {
+                        fprintf(stderr, "'%s'를 코드 %d으로 종료되었습니다.\n", cmds[i].name, exit_status);
+                        return -1;
+                    }
+                } else if (WIFSIGNALED(status)) {
+                    int term_sig = WTERMSIG(status);
+                    fprintf(stderr, "'%s'는 신호 %d에 의해 종료되었습니다.\n", cmds[i].name, term_sig);
+                    return -1;
+                }
+            } else {
+                printf("[background] %d\n", pid);
+            }
+
+            if (prev_read_fd != -1){
+                close(prev_read_fd);
+            }
+
+            if (i < num_cmds - 1){
+                close(pipe_fd[1]);
+                prev_read_fd = pipe_fd[0];
+            }
+
+
+        }
+
     }
+
+    if (prev_read_fd != -1) {
+        close(prev_read_fd);
+    }
+    
+    // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
+    signal(SIGCHLD, SIG_IGN);
 
     return 0;
 }
