@@ -1,4 +1,4 @@
-# Mini-Shell-Project
+# Mini Shell Project
 
 이 프로젝트는 C 언어를 기반으로 커맨드 라인 쉘을 직접 구현하고, 시스템 프로그래밍의 핵심 개념을 학습하는 스터디형 협업 프로젝트입니다.
 
@@ -37,11 +37,13 @@ make
 ```bash
 myshell/
 ├── include/        # 헤더 파일 (.h)
+│   ├── executor.h
 │   ├── parser.h
-│   └── executor.h
+│   └── redirect.h
 ├── src/            # 소스 코드 (.c)
 │   ├── main.c
 │   ├── parser.c
+│   ├── redirect.c
 │   └── executor.c
 ├── build/          # 빌드된 결과물 (.o, shell 실행 파일)
 ├── Makefile        # 빌드 자동화
