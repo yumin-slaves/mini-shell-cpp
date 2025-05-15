@@ -159,6 +159,8 @@ void free_command(Command* cmd) {
         free(cmd->args[i]);
     }
     free(cmd->args);
+    free(cmd->input_file);
+    free(cmd->output_file);
 }
 
 void free_commands(Command* cmds, int num_cmds) {

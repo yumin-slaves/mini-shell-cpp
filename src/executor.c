@@ -142,6 +142,9 @@ int execute_commands(Command* cmds, int num_cmds) {
                 }
             } else {
                 printf("[background] %d\n", pid);
+
+                // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
+                signal(SIGCHLD, SIG_IGN);
             }
 
             if (prev_read_fd != -1){
@@ -162,8 +165,5 @@ int execute_commands(Command* cmds, int num_cmds) {
         close(prev_read_fd);
     }
     
-    // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
-    signal(SIGCHLD, SIG_IGN);
-
     return 0;
 }
