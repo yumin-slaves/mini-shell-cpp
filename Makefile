@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Wall -g -O0 -Iinclude
 SRCDIR = src
 BUILDDIR = build
 TARGET = mysh
