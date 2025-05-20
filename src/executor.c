@@ -51,6 +51,18 @@ int handle_internal_command(Command cmd) {
         }
         return 1; // 내부 명령 처리 완료
     }
+    if (strcmp(cmd.name, "unset") == 0) {
+        if (cmd.args[1] == NULL) {
+            fprintf(stderr, "unset : 삭제할 환경 변수를 입력하세요.\n");
+        } else{        
+        char* key = cmd.args[1];
+
+        if (unsetenv(key) != 0) {
+            perror("환경 변수 제거 실패");
+        }
+        return 1;
+        }
+    }
     return 0; // 외부 명령 실행 필요
 }
 
@@ -142,6 +154,9 @@ int execute_commands(Command* cmds, int num_cmds) {
                 }
             } else {
                 printf("[background] %d\n", pid);
+
+                // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
+                signal(SIGCHLD, SIG_IGN);
             }
 
             if (prev_read_fd != -1){
@@ -161,9 +176,7 @@ int execute_commands(Command* cmds, int num_cmds) {
     if (prev_read_fd != -1) {
         close(prev_read_fd);
     }
-    
-    // 백그라운드 자식이 좀비가 되지 않도록 SIGCHLD 무시
-    signal(SIGCHLD, SIG_IGN);
+
 
     return 0;
 }
