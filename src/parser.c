@@ -13,6 +13,7 @@ char* create_char_mem() {
     return temp;
 }
 
+
 // 사용자 입력 파싱하기
 Command parse_single_command(char *input) {
     int capacity = 2;
@@ -93,7 +94,9 @@ Command parse_single_command(char *input) {
         }
 
         cmd.args[cmd.argc] = arg;
-        if (cmd.argc == 0) strcpy(cmd.name, arg);
+        if (cmd.argc == 0) {
+            strcpy(cmd.name, arg);
+        }
         cmd.argc++;
     }
 
