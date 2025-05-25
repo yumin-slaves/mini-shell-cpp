@@ -12,10 +12,6 @@
 
 // 내부 명령어 처리
 int handle_internal_command(Command cmd) {
-    if (strcmp(cmd.name, "exit") == 0) {
-        printf("Bye!\n");
-        exit(0);
-    }
     if (strcmp(cmd.name, "cd") == 0) {
         if (cmd.args[1] == NULL) {
             fprintf(stderr, "cd: 경로를 입력하세요.\n");
@@ -50,6 +46,18 @@ int handle_internal_command(Command cmd) {
             }
         }
         return 1; // 내부 명령 처리 완료
+    }
+    if (strcmp(cmd.name, "unset") == 0) {
+        if (cmd.args[1] == NULL) {
+            fprintf(stderr, "unset : 삭제할 환경 변수를 입력하세요.\n");
+        } else{        
+        char* key = cmd.args[1];
+
+        if (unsetenv(key) != 0) {
+            perror("환경 변수 제거 실패");
+        }
+        return 1;
+        }
     }
     return 0; // 외부 명령 실행 필요
 }
@@ -164,6 +172,5 @@ int execute_commands(Command* cmds, int num_cmds) {
     if (prev_read_fd != -1) {
         close(prev_read_fd);
     }
-    
     return 0;
 }

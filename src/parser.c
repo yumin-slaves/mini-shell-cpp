@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
 #include "parser.h"
 
 // 1차원 char 생성하기
@@ -13,9 +15,11 @@ char* create_char_mem() {
     return temp;
 }
 
+
 // 사용자 입력 파싱하기
 Command parse_single_command(char *input) {
     int capacity = 2;
+    int arg_check = 0;
 
     Command cmd;
     cmd.name = create_char_mem();
@@ -70,6 +74,23 @@ Command parse_single_command(char *input) {
         char* arg = create_char_mem();
         int arg_index = 0;
         char quote = 0;
+        arg_check = 0;
+
+        // $ 기호 처리
+        if (input[i] == '$') {
+            
+            i++;
+            while (isalnum(input[i]) || input[i] == '_') {
+                arg[arg_index++] = input[i++];
+            }
+            arg[arg_index] = '\0';
+            char* value = getenv(arg);
+            if (!value) {
+                continue;
+            }
+            cmd.args[cmd.argc] = strdup(value);
+            arg_check = 1;
+        }
 
         if (input[i] == '"' || input[i] == '\'') {
             quote = input[i++];
@@ -92,8 +113,12 @@ Command parse_single_command(char *input) {
             cmd.args = realloc(cmd.args, sizeof(char*) * capacity);
         }
 
-        cmd.args[cmd.argc] = arg;
-        if (cmd.argc == 0) strcpy(cmd.name, arg);
+        if (!arg_check) {
+            cmd.args[cmd.argc] = arg;
+        }
+        if (cmd.argc == 0) {
+            strcpy(cmd.name, arg);
+        }
         cmd.argc++;
     }
 
