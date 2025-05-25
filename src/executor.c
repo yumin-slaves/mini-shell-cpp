@@ -12,10 +12,6 @@
 
 // 내부 명령어 처리
 int handle_internal_command(Command cmd) {
-    if (strcmp(cmd.name, "exit") == 0) {
-        printf("Bye!\n");
-        exit(0);
-    }
     if (strcmp(cmd.name, "cd") == 0) {
         if (cmd.args[1] == NULL) {
             fprintf(stderr, "cd: 경로를 입력하세요.\n");
@@ -164,6 +160,5 @@ int execute_commands(Command* cmds, int num_cmds) {
     if (prev_read_fd != -1) {
         close(prev_read_fd);
     }
-    
     return 0;
 }

@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "redirect.h"
+#include "history.h"
 
 #define MAX_COMMAND_SIZE 1024
 

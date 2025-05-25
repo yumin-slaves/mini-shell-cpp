@@ -73,3 +73,6 @@ dkms.conf
 # others
 mysh
 /build/
+
+#history.txt
+history.txt
