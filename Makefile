@@ -19,12 +19,10 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(BUILDDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET): $(TARGET_BIN)
-
 $(TARGET_BIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^
 
-all: $(TARGET)
+all: $(TARGET_BIN)
 
 clean:
 	rm -rf $(BUILDDIR) $(TARGET)$(EXT)
