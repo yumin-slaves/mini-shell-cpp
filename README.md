@@ -91,3 +91,14 @@ myshell/
 - 커밋 메시지는 `feat:`, `fix:`, `docs:` 등 [Conventional Commits] 스타일 사용
 
 ---
+
+## 🎨 코드 스타일 가이드
+
+> 일관된 스타일을 유지하여 코드 가독성과 협업 효율을 높입니다.
+
+- 클래스 이름: `PascalCase` (`Shell`, `InternalCommand`)
+- 함수 이름: `snake_case` (`run_shell()`, `parse_command()`)
+- 변수 이름: `snake_case` (`command_list`, `input_line`)
+- 파일 이름: `snake_case` (`parser.cpp`, `redirect_handler.h`)
+
+---
