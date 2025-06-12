@@ -1,4 +1,4 @@
-CC = gcc
+CC = g++
 CFLAGS = -Wall -g -O0 -Iinclude
 SRCDIR = src
 BUILDDIR = build

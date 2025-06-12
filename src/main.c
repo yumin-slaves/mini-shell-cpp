@@ -29,8 +29,8 @@ history* create_history(){
     
     history_list->head = (history_node*)malloc(sizeof(history_node));
     history_list->tail = (history_node*)malloc(sizeof(history_node));
-    history_list->head->command = "";
-    history_list->tail->command = "";
+    history_list->head->command = strdup("");
+    history_list->tail->command = strdup("");
     history_list->head->prev = NULL;
     history_list->head->next = history_list->tail;
     history_list->tail->prev = history_list->head;
@@ -81,7 +81,7 @@ char* read_input(history* history_list) {
     struct termios orig_termios;
     enable_raw_mode(&orig_termios);
 
-    char* buffer = malloc(1024);
+    char* buffer = (char*)malloc(1024);
     int len = 0;
     char c;
     while (1) {
@@ -111,7 +111,7 @@ char* read_input(history* history_list) {
                 if (seq[1] == 'A') {
                     if (history_list->curr->prev != history_list->head) {
                         // 기존 입력 지우기
-                        for (int i = 0; i < strlen(history_list->curr->command); i++) {
+                        for (int i = 0; i < (int)strlen(history_list->curr->command); i++) {
                             write(STDOUT_FILENO, "\b \b", 3);
                         }
                         history_list->curr = history_list->curr->prev;
@@ -127,7 +127,7 @@ char* read_input(history* history_list) {
 
                     if (history_list->curr->next != history_list->tail) {
                         // 기존 입력 지우기
-                        for (int i = 0; i < strlen(history_list->curr->command); i++) {
+                        for (int i = 0; i < (int)strlen(history_list->curr->command); i++) {
                             write(STDOUT_FILENO, "\b \b", 3);
                         }
                         history_list->curr = history_list->curr->next;
@@ -135,7 +135,7 @@ char* read_input(history* history_list) {
                         len = strlen(buffer);
                         write(STDOUT_FILENO, buffer, len);
                     } else {
-                        for (int i = 0; i < strlen(history_list->curr->command); i++) {
+                        for (int i = 0; i < (int)strlen(history_list->curr->command); i++) {
                             write(STDOUT_FILENO, "\b \b", 3);
                         }
                         history_list->curr = history_list->curr->next;

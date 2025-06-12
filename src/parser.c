@@ -38,7 +38,7 @@ Command parse_single_command(char *input) {
 
         // 리디렉션 기호 확인
         if (input[i] == '<' || input[i] == '>') {
-            int redirect_type = 0;
+            RedirectType redirect_type;
             if (input[i] == '<') {
                 redirect_type = REDIRECT_INPUT;
                 i++;
@@ -110,7 +110,7 @@ Command parse_single_command(char *input) {
 
         if (cmd.argc == capacity) {
             capacity *= 2;
-            cmd.args = realloc(cmd.args, sizeof(char*) * capacity);
+            cmd.args = (char**)realloc(cmd.args, sizeof(char*) * capacity);
         }
 
         if (!arg_check) {
@@ -127,7 +127,7 @@ Command parse_single_command(char *input) {
         cmd.argc -= 1;
     }
 
-    cmd.args = realloc(cmd.args, sizeof(char*) * (cmd.argc + 1));
+    cmd.args = (char**)realloc(cmd.args, sizeof(char*) * (cmd.argc + 1));
     cmd.args[cmd.argc] = NULL;
 
     return cmd;
@@ -139,7 +139,7 @@ Command* parse_input(char *input, int* num_cmds) {
     int capacity = 2;
     *num_cmds = 0;
 
-    Command* cmds = malloc(sizeof(Command) * capacity);
+    Command* cmds = (Command*)malloc(sizeof(Command) * capacity);
     if (!cmds) {
         fprintf(stderr, "Command 배열 메모리 할당 실패\n");
         exit(EXIT_FAILURE);
@@ -161,7 +161,7 @@ Command* parse_input(char *input, int* num_cmds) {
 
         if (*num_cmds == capacity) {
             capacity *= 2;
-            cmds = realloc(cmds, sizeof(Command) * capacity);
+            cmds = (Command*)realloc(cmds, sizeof(Command) * capacity);
             if (!cmds) {
                 fprintf(stderr, "Command 배열 메모리 재할당 실패\n");
                 exit(EXIT_FAILURE);
