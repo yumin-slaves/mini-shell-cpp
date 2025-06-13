@@ -3,7 +3,6 @@
 
 #include "history.h"
 
-
 history* create_history(){
     history* history_list = (history*)malloc(sizeof(history));
     
