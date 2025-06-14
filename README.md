@@ -3,8 +3,6 @@
 이 프로젝트는 C 언어를 기반으로 커맨드 라인 쉘을 직접 구현된 것을 바탕으로
 C++로 리팩토링하는 프로젝트입니다.
 
-> for 박주영
-
 ---
 
 ## 🛠 Build 및 실행
@@ -17,7 +15,15 @@ make
 
 ---
 
+## 팀원
+
+## 팀원
+
+- [박주영](https://github.com/juyounginpark) - C++ 리팩토링 담당
+
+
 ## 📦 기능
+> 아래 기능은 원래 C로 구현되었으며, 현재는 C++로 리팩토링 중입니다.
 - 기본 명령어
   - 내부 명령어: `cd`, `pwd`, `exit`
   - 외부 명령어: `ls`, `date`, `cat`
@@ -32,35 +38,61 @@ make
 
 ---
 
-## 해야 할 일
+## ✅ C++ 리팩토링 일정 & PR 계획
 
-### 🟦 1주차 목표: 기본 구조 + 내부 명령어까지 리팩토링
-- Shell 클래스로 메인 루프 재구성
-- Parser를 std::string, std::vector 기반으로 재작성
-- Command 인터페이스 설계
-- 내부 명령어(cd, pwd, exit)를 InternalCommand로 분리하여 실행되도록 구현
+### 🧩 PR #1: 내부 명령어 리팩토링 (6/18 ~ 6/19)
 
-#### 🧩 구성 예시
+브랜치 이름: `refactor/internal-command`
 
-- Shell, Parser, ICommand, InternalCommand 클래스 생성
-- 기존 C 코드(main.c, parser.c 등) 일부를 점진적으로 C++로 변환
-- make 빌드 및 테스트 입력 (< test.txt)으로 동작 확인
+- [x] `Shell`, `Parser`, `Executor` 클래스 기본 구조 생성
+- [x] `ICommand` 인터페이스 설계
+- [x] `CdCommand`, `PwdCommand`, `ExitCommand` 구현
+- [x] 명령어 파싱 → 커맨드 객체 분리 구조
+- [x] 메인 루프에서 커맨드 실행 흐름 연결
+- [ ] 테스트: 내부 명령어 동작 확인
+
+📌 **PR 제출일 목표: 6/19(수) 오후 6시 이전**
 
 ---
 
-### 🟩 2주차 목표: 나머지 기능 전체 리팩토링
-- ExternalCommand 구현 (fork + execvp)
-- RedirectHandler, PipeHandler 설계 및 적용
-- `&` 백그라운드 실행 처리
-- 전체 실행 흐름을 클래스 기반으로 정리 (Executor 등)
-- .myshellrc 읽기 / 히스토리 저장은 선택 구현
+### 🧩 PR #2: 외부 명령어 실행 구조 (6/20 ~ 6/21)
 
-#### 🧩 구성 예시
+브랜치 이름: `refactor/external-command`
 
-- 파이프(|) 처리 → PipeHandler 클래스
-- 리디렉션(<, >) 처리 → RedirectHandler 클래스
-- Command의 서브클래스로 외부 명령 실행
-- 전체적으로 Shell.run() 한 줄로 실행 흐름이 연결되도록 설계
+- [x] `ExternalCommand` 클래스 설계 및 구현
+- [x] `fork` + `execvp` 기반 실행 처리
+- [x] 내부/외부 명령어 분기 로직 작성
+- [x] `Shell`에서 execute 흐름 통합
+- [ ] 테스트: `ls`, `date`, `cat` 정상 실행
+
+📌 **PR 제출일 목표: 6/21(금) 오후 6시 이전**
+
+---
+
+### 🧩 PR #3: 리디렉션 & 파이프 구조 설계 (6/22 ~ 6/23)
+
+브랜치 이름: `refactor/redirection-pipe`
+
+- [x] 명령어 파싱 확장: `<`, `>`, `|` 토큰 인식
+- [x] 리디렉션/파이프 정보를 Command 객체에 포함
+- [x] 실행 구조에 리디렉션/파이프 슬롯 추가 (기능 구현은 선택)
+- [ ] 테스트: 구조만 반영된 명령어 실행 흐름 확인
+
+📌 **PR 제출일 목표: 6/23(일) 오후 6시 이전**
+
+---
+
+### 🧩 PR #4: 설정파일 & 부가기능 (6/24 ~ 6/25)
+
+브랜치 이름: `feature/rc-history-signal`
+
+- [x] `.myshellrc` 파일 파싱 및 적용
+- [x] `.myshell_history` 기록 기능 추가
+- [x] 환경변수 처리 (`getenv`, `export`, `unset`)
+- [x] `SIGINT` 핸들링 (`Ctrl+C` 처리)
+- [ ] 테스트: `.rc`, `.history` 정상 작동 여부 확인
+
+📌 **PR 제출일 목표: 6/25(수) 오후 6시 이전**
 
 ---
 
